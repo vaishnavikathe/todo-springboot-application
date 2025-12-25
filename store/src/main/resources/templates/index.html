@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+
+    <!-- CSRF META TAGS -->
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+    <title>ToDo App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <script src="script.js"></script>
+    <form th:action="@{/logout}" method="post" class="logout-form">
+        <button type="submit" class="btn-logout">Logout</button>
+    </form>
+    <!--Header-->
+    <div class="header">
+        <h1>ToDo List</h1>
+
+        <div class="todo-form">
+            <input type="hidden" id="todoId">
+
+            <input type="text" id="input" placeholder="Title">
+            <input type="text" id="description" placeholder="Description">
+
+            <button class="btn" onclick="saveTodo()">Save</button>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search by title...">
+        </div>
+
+    </div>
+
+    <!--ToDo Table-->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="todoTableBody">
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="pagination">
+        <button id="prevBtn">Prev</button>
+        <span id="pageInfo"></span>
+        <button id="nextBtn">Next</button>
+    </div>
+
+
+</body>
+
+</html>
