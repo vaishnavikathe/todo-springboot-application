@@ -5,28 +5,56 @@
     <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
-    <h2>Login to Todo App</h2>
-    
-    <div th:if="${param.success}" style="color: green;">
-        Registration successful! Please login.
-    </div>
-    
-    <div th:if="${param.logout}" class="alert-info" style="color: blue; margin-bottom: 10px;">
-    	You have been logged out successfully.
-	</div>
+    <div class="auth-container">
+        <h2>Login to Todo App</h2>
+        
+        <div id="message" style="margin-bottom: 10px;"></div>
 
-    <form th:action="@{/login}" method="post">
-        <div>
-            <label>Username: </label>
-            <input type="text" name="username"/>
+        <form id="loginForm">
+            <div class="auth-form-group">
+                <label>Username: </label>
+                <input type="text" id="username" name="username" required/>
+            </div>
+            <div class="auth-form-group">
+                <label>Password: </label>
+                <input type="password" id="password" name="password" required/>
+            </div>
+            <button type="submit" class="btn-primary">Log In</button>
+        </form>
+        
+        <div class="auth-footer">
+            New user? <a th:href="@{/register}">Register here</a>
         </div>
-        <div>
-            <label>Password: </label>
-            <input type="password" name="password"/>
-        </div>
-        <button type="submit">Log In</button>
-    </form>
-    
-    <p>New user? <a th:href="@{/register}">Register here</a></p>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Save the token returned by AuthController
+                    localStorage.setItem("jwtToken", data.token); 
+                    // Redirect to the main page
+                    window.location.href = "/"; 
+                } else {
+                    document.getElementById("message").innerText = "Invalid credentials";
+                    document.getElementById("message").style.color = "red";
+                }
+            } catch (error) {
+                console.error("Error during login:", error);
+            }
+        });
+    </script>
 </body>
 </html>

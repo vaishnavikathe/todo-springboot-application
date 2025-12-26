@@ -3,8 +3,6 @@ package com.codewithvaishnavi.store.service;
 //import java.util.List;
 
 import org.springframework.data.domain.Page;
-//import org.springframework.data.domain.Pageable;
-
 
 import com.codewithvaishnavi.store.model.ToDo;
 import com.codewithvaishnavi.store.model.User;

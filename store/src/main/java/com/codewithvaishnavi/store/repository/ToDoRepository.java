@@ -17,5 +17,5 @@ public interface ToDoRepository extends JpaRepository<ToDo, Long>{
 	Page<ToDo> findByUser(User user, Pageable pageable);
 	
 	//Search ToDos only within user's own login
-	Page<ToDo> findByTitleContainingIgnoreCase(String title, User user, Pageable pagable);
+	Page<ToDo> findByTitleContainingIgnoreCaseAndUser(String title, User user, Pageable pageable);
 }

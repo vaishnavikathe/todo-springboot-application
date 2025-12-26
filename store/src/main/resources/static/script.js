@@ -1,7 +1,6 @@
-// ================= CSRF =================
-const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
+// ================= TOKEN MANAGEMENT =================
+// JWT replaces CSRF logic. We retrieve the token stored during login.
+const getToken = () => localStorage.getItem("jwtToken");
 
 // ================= GLOBAL STATE =================
 let currentPage = 0;
@@ -17,9 +16,20 @@ async function loadTodos() {
         url = `/api/todos/search?title=${encodeURIComponent(currentSearch)}&page=${currentPage}&size=${pageSize}`;
     }
 
-    const response = await fetch(url);
-    const data = await response.json();
+    // Every GET request must now include the Bearer token in headers
+    const response = await fetch(url, {
+        headers: {
+            "Authorization": "Bearer " + getToken()
+        }
+    });
 
+    if (response.status === 401 || response.status === 403) {
+        // If token is invalid or expired, redirect to login
+        window.location.href = "/login";
+        return;
+    }
+
+    const data = await response.json();
     totalPages = data.totalPages;
     renderTodos(data.content);
     updatePaginationInfo();
@@ -38,7 +48,7 @@ function renderTodos(todos) {
             <td>${todo.description || ""}</td>
             <td>${todo.status}</td>
             <td>
-                <button onclick="editTodo	(${todo.id}, '${todo.title}', '${todo.description || ""}')">Edit</button>
+                <button onclick="editTodo(${todo.id}, '${todo.title}', '${todo.description || ""}')">Edit</button>
                 <button onclick="deleteTodo(${todo.id})">Delete</button>
                 ${todo.status === 'PENDING'
                     ? `<button onclick="markCompleted(${todo.id})">Complete</button>`
@@ -70,12 +80,12 @@ async function saveTodo() {
 
     const url = id ? `/api/todos/${id}` : "/api/todos";
     const method = id ? "PUT" : "POST";
-    console.log("csrfToken",csrfToken);
+
     await fetch(url, {
         method,
         headers: {
             "Content-Type": "application/json",
-            [csrfHeader]: csrfToken
+            "Authorization": "Bearer " + getToken() // Include JWT Token
         },
         body: JSON.stringify({ title, description })
     });
@@ -92,11 +102,11 @@ async function deleteTodo(id) {
     if (!confirm("Are you sure you want to delete this ToDo?")) return;
 
     await fetch(`/api/todos/${id}`, {
-    	method: "DELETE",
-    	headers: {
-        	[csrfHeader]: csrfToken
-    	}
-	});
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + getToken() // Include JWT Token
+        }
+    });
 
     loadTodos();
 }
@@ -104,13 +114,19 @@ async function deleteTodo(id) {
 // ================= MARK COMPLETED =================
 async function markCompleted(id) {
     await fetch(`/api/todos/${id}/complete`, {
-    	method: "PUT",
-    	headers: {
-        	[csrfHeader]: csrfToken
-    	}
-	});
+        method: "PUT",
+        headers: {
+            "Authorization": "Bearer " + getToken() // Include JWT Token
+        }
+    });
 
     loadTodos();
+}
+
+// ================= LOGOUT =================
+function logout() {
+    localStorage.removeItem("jwtToken"); // Clear the token
+    window.location.href = "/login"; // Redirect to login page
 }
 
 // ================= SEARCH =================
@@ -131,6 +147,12 @@ function updatePaginationInfo() {
 
 // ================= EVENT LISTENERS =================
 document.addEventListener("DOMContentLoaded", () => {
+    // Check if token exists, otherwise redirect to login immediately
+    if (!getToken()) {
+        window.location.href = "/login";
+        return;
+    }
+
     document.getElementById("searchInput")
         .addEventListener("keyup", searchTodos);
 
