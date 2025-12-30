@@ -37,3 +37,4 @@ The application supports **user authentication**, **CRUD operations**, **paginat
 - Maven
 - Git & GitHub
 - VS Code / Eclipse
+
